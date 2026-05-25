@@ -5,7 +5,7 @@ const SECRET = new TextEncoder().encode(
   process.env.ADMIN_JWT_SECRET ?? "fallback-secret-change-in-production"
 );
 
-export async function proxy(req: NextRequest) {
+export default async function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
   // Protect /admin/* except /admin (login page)
