@@ -97,7 +97,7 @@ export default function HomePage() {
 
             <div className="space-y-4">
               <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold leading-tight">
-                <span className="text-white">Program Magister</span>
+                <span className="text-white">Program S2</span>
                 <br />
                 <span
                   style={{
