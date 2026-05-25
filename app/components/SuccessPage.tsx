@@ -6,15 +6,10 @@ import { CheckCircle, Download, Home, Mail } from "lucide-react";
 interface Props {
   namaLengkap: string;
   email: string;
+  nomorPendaftaran: string;
 }
 
-export default function SuccessPage({ namaLengkap, email }: Props) {
-  const [nomorPendaftaran] = useState(() => {
-    const year = new Date().getFullYear();
-    const rand = Math.floor(Math.random() * 90000) + 10000;
-    return `UNKHAIR-IK-${year}-${rand}`;
-  });
-
+export default function SuccessPage({ namaLengkap, email, nomorPendaftaran }: Props) {
   const [show, setShow] = useState(false);
 
   useEffect(() => {
@@ -39,11 +34,9 @@ export default function SuccessPage({ namaLengkap, email }: Props) {
       </div>
 
       <div>
-        <h2 className="text-2xl font-bold text-white mb-2">
-          Pendaftaran Berhasil!
-        </h2>
+        <h2 className="text-2xl font-bold text-white mb-2">Pendaftaran Berhasil!</h2>
         <p className="text-blue-300/70 text-sm">
-          Selamat, {namaLengkap.split(" ")[0]}! Formulir pendaftaran Anda telah berhasil dikirim.
+          Selamat, {namaLengkap.split(" ")[0]}! Formulir pendaftaran Anda telah berhasil dikirim dan tersimpan.
         </p>
       </div>
 
@@ -67,7 +60,7 @@ export default function SuccessPage({ namaLengkap, email }: Props) {
           {
             step: "1",
             title: "Cek Email",
-            desc: `Konfirmasi pendaftaran telah dikirim ke ${email}`,
+            desc: `Simpan nomor pendaftaran Anda dari sesi ini. Konfirmasi dikirim ke ${email}`,
           },
           {
             step: "2",
@@ -110,10 +103,7 @@ export default function SuccessPage({ namaLengkap, email }: Props) {
 
       {/* Actions */}
       <div className="flex flex-col sm:flex-row gap-3 justify-center">
-        <button
-          onClick={() => window.print()}
-          className="btn-secondary text-sm py-3 px-6"
-        >
+        <button onClick={() => window.print()} className="btn-secondary text-sm py-3 px-6">
           <Download size={16} />
           Cetak Bukti
         </button>

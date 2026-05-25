@@ -19,6 +19,8 @@ export default function DaftarPage() {
   const [formData, setFormData] = useState<AllFormData>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [nomorPendaftaran, setNomorPendaftaran] = useState("");
+  const [submitError, setSubmitError] = useState("");
 
   const handleStep1 = (data: Step1Data) => {
     setFormData((prev) => ({ ...prev, ...data }));
@@ -40,10 +42,26 @@ export default function DaftarPage() {
 
   const handleSubmit = async () => {
     setIsSubmitting(true);
-    await new Promise((resolve) => setTimeout(resolve, 2000));
-    setIsSubmitting(false);
-    setSubmitted(true);
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    setSubmitError("");
+    try {
+      const res = await fetch("/api/pendaftaran", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
+      });
+      const json = await res.json();
+      if (!res.ok || !json.success) {
+        setSubmitError(json.message ?? "Gagal mengirim. Coba lagi.");
+        return;
+      }
+      setNomorPendaftaran(json.nomorPendaftaran);
+      setSubmitted(true);
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    } catch {
+      setSubmitError("Tidak dapat terhubung ke server. Periksa koneksi internet Anda.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const goBack = () => {
@@ -101,6 +119,7 @@ export default function DaftarPage() {
                 <SuccessPage
                   namaLengkap={formData.namaLengkap ?? "Pendaftar"}
                   email={formData.email ?? ""}
+                  nomorPendaftaran={nomorPendaftaran}
                 />
               </div>
             </div>
@@ -138,12 +157,19 @@ export default function DaftarPage() {
                   />
                 )}
                 {step === 4 && (
-                  <Step4Konfirmasi
-                    data={formData}
-                    onBack={goBack}
-                    onSubmit={handleSubmit}
-                    isSubmitting={isSubmitting}
-                  />
+                  <>
+                    <Step4Konfirmasi
+                      data={formData}
+                      onBack={goBack}
+                      onSubmit={handleSubmit}
+                      isSubmitting={isSubmitting}
+                    />
+                    {submitError && (
+                      <div className="mt-4 p-4 rounded-xl bg-red-500/10 border border-red-500/30 text-red-300 text-sm">
+                        ⚠ {submitError}
+                      </div>
+                    )}
+                  </>
                 )}
               </div>
 
