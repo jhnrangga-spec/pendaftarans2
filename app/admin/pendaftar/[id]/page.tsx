@@ -4,6 +4,7 @@ import { getAdminSession } from "@/app/lib/auth";
 import AdminLayout from "@/app/components/admin/AdminLayout";
 import StatusBadge from "@/app/components/admin/StatusBadge";
 import StatusUpdater from "@/app/components/admin/StatusUpdater";
+import ReloadButton from "@/app/components/admin/ReloadButton";
 import Link from "next/link";
 import {
   ArrowLeft, User, Phone, GraduationCap, Briefcase, FileText, Calendar, Hash,
@@ -43,13 +44,18 @@ interface Pendaftar {
   created_at: string;
 }
 
-async function getPendaftar(id: string): Promise<Pendaftar | null> {
-  const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
-  );
-  const { data } = await supabase.from("pendaftaran_s2").select("*").eq("id", id).single();
-  return data as Pendaftar | null;
+async function getPendaftar(id: string): Promise<{ data: Pendaftar | null; error: string | null }> {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!url || !key) return { data: null, error: "env_missing" };
+  try {
+    const supabase = createClient(url, key);
+    const { data, error } = await supabase.from("pendaftaran_s2").select("*").eq("id", id).single();
+    if (error) return { data: null, error: error.message };
+    return { data: data as Pendaftar, error: null };
+  } catch (e) {
+    return { data: null, error: String(e) };
+  }
 }
 
 const CARD_BG = "linear-gradient(135deg, #0c1d35 0%, #0a1a2e 100%)";
@@ -93,7 +99,30 @@ export default async function DetailPendaftarPage({ params }: { params: Promise<
   if (!isAdmin) redirect("/admin");
 
   const { id } = await params;
-  const p = await getPendaftar(id);
+  const { data: p, error: fetchError } = await getPendaftar(id);
+
+  if (fetchError) {
+    return (
+      <AdminLayout>
+        <div className="max-w-lg mx-auto mt-12">
+          <div
+            className="rounded-2xl border p-8 text-center"
+            style={{ background: "linear-gradient(135deg,#0c1d35,#0a1a2e)", borderColor: "rgba(239,68,68,0.4)" }}
+          >
+            <p className="text-4xl mb-4">⚠️</p>
+            <h2 className="text-lg font-bold mb-2" style={{ color: "#e0f2fe" }}>Gagal Memuat Data</h2>
+            <p className="text-sm mb-6" style={{ color: "#4a7fa5" }}>
+              {fetchError === "env_missing"
+                ? "Koneksi Supabase belum dikonfigurasi."
+                : fetchError}
+            </p>
+            <ReloadButton />
+          </div>
+        </div>
+      </AdminLayout>
+    );
+  }
+
   if (!p) notFound();
 
   const tglLahir = p.tanggal_lahir
