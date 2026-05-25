@@ -12,6 +12,7 @@ import {
   MapPin,
   Clock,
   GraduationCap,
+  Shield,
 } from "lucide-react";
 
 const KEUNGGULAN = [
@@ -63,10 +64,24 @@ export default function HomePage() {
               </div>
             </div>
 
-            <Link href="/daftar" className="btn-primary text-sm py-2.5 px-5">
-              Daftar Sekarang
-              <ArrowRight size={16} />
-            </Link>
+            <div className="flex items-center gap-3">
+              <Link
+                href="/admin"
+                className="flex items-center gap-2 text-sm font-semibold px-4 py-2.5 rounded-xl transition-all"
+                style={{
+                  background: "rgba(14,165,233,0.08)",
+                  color: "#38bdf8",
+                  border: "1px solid rgba(14,165,233,0.25)",
+                }}
+              >
+                <Shield size={15} />
+                Login Admin
+              </Link>
+              <Link href="/daftar" className="btn-primary text-sm py-2.5 px-5">
+                Daftar Sekarang
+                <ArrowRight size={16} />
+              </Link>
+            </div>
           </div>
         </nav>
 
