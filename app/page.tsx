@@ -295,6 +295,12 @@ export default function HomePage() {
             <p className="text-xs text-blue-400/30">
               © {new Date().getFullYear()} Universitas Khairun. Hak Cipta Dilindungi.
             </p>
+            <Link
+              href="/admin"
+              className="text-xs text-blue-400/20 hover:text-blue-400/50 transition-colors mt-1 inline-block"
+            >
+              Admin
+            </Link>
           </div>
         </footer>
       </div>
