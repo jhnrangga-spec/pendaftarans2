@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { Check } from "lucide-react";
 
 const OPTIONS = [
   { value: "pending", label: "Menunggu Verifikasi" },
@@ -42,10 +43,15 @@ export default function StatusUpdater({ id, currentStatus }: Props) {
       <select
         value={status}
         onChange={(e) => setStatus(e.target.value)}
-        className="ocean-input py-2 text-sm w-auto min-w-[200px]"
+        className="text-sm px-3 py-2 rounded-xl border outline-none min-w-[200px]"
+        style={{
+          background: "rgba(10,22,40,0.8)",
+          color: "#e0f2fe",
+          borderColor: "rgba(30,58,95,0.8)",
+        }}
       >
         {OPTIONS.map((o) => (
-          <option key={o.value} value={o.value}>
+          <option key={o.value} value={o.value} style={{ background: "#0c1d35" }}>
             {o.label}
           </option>
         ))}
@@ -54,11 +60,15 @@ export default function StatusUpdater({ id, currentStatus }: Props) {
       <button
         onClick={handleSave}
         disabled={loading || status === currentStatus}
-        className="btn-primary py-2 px-5 text-sm"
+        className="flex items-center gap-2 text-sm font-semibold px-4 py-2 rounded-xl transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+        style={{
+          background: "linear-gradient(135deg,#0ea5e9,#06b6d4)",
+          color: "#001830",
+        }}
       >
         {loading ? (
           <>
-            <svg className="spin" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <svg className="spin" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
               <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4" />
             </svg>
             Menyimpan...
@@ -69,7 +79,10 @@ export default function StatusUpdater({ id, currentStatus }: Props) {
       </button>
 
       {saved && (
-        <span className="text-teal-400 text-sm font-medium">✓ Tersimpan</span>
+        <span className="flex items-center gap-1.5 text-sm font-medium" style={{ color: "#6ee7b7" }}>
+          <Check size={14} />
+          Tersimpan
+        </span>
       )}
     </div>
   );

@@ -2,7 +2,6 @@
 
 import { useState, FormEvent } from "react";
 import { useRouter } from "next/navigation";
-import OceanBackground from "../components/OceanBackground";
 import { Waves, Eye, EyeOff, Lock, User, Shield } from "lucide-react";
 import Link from "next/link";
 
@@ -36,8 +35,10 @@ export default function AdminLoginPage() {
 
   return (
     <>
-      <OceanBackground />
-      <div className="min-h-screen flex items-center justify-center px-4">
+      <div
+        className="min-h-screen flex items-center justify-center px-4"
+        style={{ background: "linear-gradient(135deg,#060f1e 0%,#0a1628 50%,#0c1d35 100%)" }}
+      >
         <div className="w-full max-w-md">
           {/* Header */}
           <div className="text-center mb-8">
@@ -52,7 +53,13 @@ export default function AdminLoginPage() {
           </div>
 
           {/* Card */}
-          <div className="glass-card p-8">
+          <div
+            className="p-8 rounded-2xl border"
+            style={{
+              background: "linear-gradient(135deg,#0c1d35 0%,#0a1a2e 100%)",
+              borderColor: "rgba(30,58,95,0.6)",
+            }}
+          >
             <form onSubmit={handleSubmit} className="space-y-5">
               {/* Username */}
               <div>
@@ -70,6 +77,7 @@ export default function AdminLoginPage() {
                     placeholder="Masukkan username"
                     required
                     autoComplete="username"
+                    style={{ background: "rgba(6,15,30,0.7)", borderColor: "rgba(30,58,95,0.8)" }}
                   />
                 </div>
               </div>
@@ -90,6 +98,7 @@ export default function AdminLoginPage() {
                     placeholder="Masukkan password"
                     required
                     autoComplete="current-password"
+                    style={{ background: "rgba(6,15,30,0.7)", borderColor: "rgba(30,58,95,0.8)" }}
                   />
                   <button
                     type="button"
@@ -158,3 +167,4 @@ export default function AdminLoginPage() {
     </>
   );
 }
+

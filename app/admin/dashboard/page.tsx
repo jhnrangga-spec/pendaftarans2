@@ -1,18 +1,11 @@
 import { createClient } from "@supabase/supabase-js";
 import { redirect } from "next/navigation";
 import { getAdminSession } from "@/app/lib/auth";
-import OceanBackground from "@/app/components/OceanBackground";
-import AdminNav from "@/app/components/admin/AdminNav";
+import AdminLayout from "@/app/components/admin/AdminLayout";
 import StatusBadge from "@/app/components/admin/StatusBadge";
 import Link from "next/link";
 import {
-  Users,
-  Clock,
-  CheckCircle,
-  XCircle,
-  Award,
-  Search,
-  Eye,
+  Users, Clock, CheckCircle, XCircle, Award, Eye, TrendingUp,
 } from "lucide-react";
 
 interface Pendaftar {
@@ -20,7 +13,6 @@ interface Pendaftar {
   nomor_pendaftaran: string;
   nama_lengkap: string;
   email: string;
-  nomor_hp: string;
   program_studi_s1: string;
   ipk_s1: number;
   jalur_masuk: string;
@@ -33,14 +25,10 @@ async function getData() {
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_ROLE_KEY!
   );
-
   const { data, error } = await supabase
     .from("pendaftaran_s2")
-    .select(
-      "id, nomor_pendaftaran, nama_lengkap, email, nomor_hp, program_studi_s1, ipk_s1, jalur_masuk, status, created_at"
-    )
+    .select("id, nomor_pendaftaran, nama_lengkap, email, program_studi_s1, ipk_s1, jalur_masuk, status, created_at")
     .order("created_at", { ascending: false });
-
   if (error) return [];
   return (data ?? []) as Pendaftar[];
 }
@@ -51,12 +39,14 @@ const JALUR_LABEL: Record<string, string> = {
   kerjasama: "Kerjasama",
 };
 
+const CARD_BG = "linear-gradient(135deg, #0c1d35 0%, #0a1a2e 100%)";
+const BORDER = "rgba(30,58,95,0.6)";
+
 export default async function DashboardPage() {
   const isAdmin = await getAdminSession();
   if (!isAdmin) redirect("/admin");
 
   const data = await getData();
-
   const stats = {
     total: data.length,
     pending: data.filter((d) => d.status === "pending").length,
@@ -65,194 +55,218 @@ export default async function DashboardPage() {
     tidakLolos: data.filter((d) => d.status === "tidak_lolos").length,
   };
 
-  return (
-    <>
-      <OceanBackground />
-      <div className="relative min-h-screen flex flex-col">
-        <AdminNav />
+  const statCards = [
+    {
+      icon: Users,
+      label: "Total Pendaftar",
+      value: stats.total,
+      accent: "#0ea5e9",
+      accentBg: "rgba(14,165,233,0.12)",
+      sub: "semua gelombang",
+    },
+    {
+      icon: Clock,
+      label: "Menunggu Verifikasi",
+      value: stats.pending,
+      accent: "#f59e0b",
+      accentBg: "rgba(245,158,11,0.12)",
+      sub: "perlu ditinjau",
+    },
+    {
+      icon: CheckCircle,
+      label: "Lolos Administrasi",
+      value: stats.lolos,
+      accent: "#06b6d4",
+      accentBg: "rgba(6,182,212,0.12)",
+      sub: "lanjut seleksi",
+    },
+    {
+      icon: Award,
+      label: "Diterima",
+      value: stats.diterima,
+      accent: "#10b981",
+      accentBg: "rgba(16,185,129,0.12)",
+      sub: "mahasiswa baru",
+    },
+  ];
 
-        <main className="flex-1 max-w-7xl mx-auto w-full px-4 py-8 space-y-8">
-          {/* Page title */}
-          <div>
-            <h1 className="text-2xl font-bold text-white">Dashboard Pendaftaran</h1>
-            <p className="text-blue-300/50 text-sm mt-1">
-              S2 Ilmu Kelautan — Universitas Khairun
+  return (
+    <AdminLayout>
+      {/* Page header */}
+      <div className="mb-8">
+        <h1 className="text-2xl font-bold mb-1" style={{ color: "#e0f2fe" }}>
+          Dashboard Pendaftaran
+        </h1>
+        <p className="text-sm" style={{ color: "#2d5a7a" }}>
+          Program Magister Ilmu Kelautan — Universitas Khairun
+        </p>
+      </div>
+
+      {/* Stat cards */}
+      <div className="grid grid-cols-2 xl:grid-cols-4 gap-4 mb-8">
+        {statCards.map(({ icon: Icon, label, value, accent, accentBg, sub }) => (
+          <div
+            key={label}
+            className="rounded-2xl p-5 border"
+            style={{ background: CARD_BG, borderColor: BORDER }}
+          >
+            <div
+              className="w-11 h-11 rounded-xl flex items-center justify-center mb-4"
+              style={{ background: accentBg }}
+            >
+              <Icon size={20} style={{ color: accent }} />
+            </div>
+            <p className="text-3xl font-bold mb-0.5" style={{ color: "#e0f2fe" }}>
+              {value}
+            </p>
+            <p className="text-sm font-medium mb-0.5" style={{ color: "#7eb8d4" }}>
+              {label}
+            </p>
+            <p className="text-xs" style={{ color: "#2d5a7a" }}>
+              {sub}
             </p>
           </div>
-
-          {/* Stats */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-            {[
-              {
-                icon: Users,
-                label: "Total Pendaftar",
-                value: stats.total,
-                color: "cyan",
-              },
-              {
-                icon: Clock,
-                label: "Menunggu",
-                value: stats.pending,
-                color: "amber",
-              },
-              {
-                icon: CheckCircle,
-                label: "Lolos Administrasi",
-                value: stats.lolos,
-                color: "teal",
-              },
-              {
-                icon: Award,
-                label: "Diterima",
-                value: stats.diterima,
-                color: "green",
-              },
-            ].map(({ icon: Icon, label, value, color }) => (
-              <div key={label} className="glass-card p-5">
-                <div
-                  className={`w-10 h-10 rounded-xl mb-3 flex items-center justify-center
-                  ${color === "cyan" ? "bg-cyan-500/20" : ""}
-                  ${color === "amber" ? "bg-amber-500/20" : ""}
-                  ${color === "teal" ? "bg-teal-500/20" : ""}
-                  ${color === "green" ? "bg-emerald-500/20" : ""}
-                `}
-                >
-                  <Icon
-                    size={20}
-                    className={`
-                    ${color === "cyan" ? "text-cyan-400" : ""}
-                    ${color === "amber" ? "text-amber-400" : ""}
-                    ${color === "teal" ? "text-teal-400" : ""}
-                    ${color === "green" ? "text-emerald-400" : ""}
-                  `}
-                  />
-                </div>
-                <p className="text-3xl font-bold text-white">{value}</p>
-                <p className="text-blue-400/60 text-xs mt-1">{label}</p>
-              </div>
-            ))}
-          </div>
-
-          {/* Table */}
-          <div className="glass-card overflow-hidden">
-            {/* Table header */}
-            <div className="p-5 border-b border-blue-800/30 flex items-center justify-between gap-4 flex-wrap">
-              <h2 className="font-semibold text-blue-100 flex items-center gap-2">
-                <Search size={16} className="text-cyan-400" />
-                Daftar Pendaftar
-                <span className="text-xs text-blue-400/50 font-normal ml-1">
-                  ({data.length} data)
-                </span>
-              </h2>
-            </div>
-
-            {data.length === 0 ? (
-              <div className="py-20 text-center">
-                <Users size={40} className="text-blue-400/20 mx-auto mb-3" />
-                <p className="text-blue-400/40 text-sm">Belum ada data pendaftar</p>
-              </div>
-            ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr className="border-b border-blue-800/30">
-                      {[
-                        "No. Pendaftaran",
-                        "Nama Lengkap",
-                        "Email",
-                        "Asal S1",
-                        "IPK",
-                        "Jalur",
-                        "Status",
-                        "Tanggal Daftar",
-                        "Aksi",
-                      ].map((h) => (
-                        <th
-                          key={h}
-                          className="text-left px-4 py-3 text-blue-400/50 text-xs font-semibold uppercase tracking-wide whitespace-nowrap"
-                        >
-                          {h}
-                        </th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {data.map((row, idx) => (
-                      <tr
-                        key={row.id}
-                        className={`border-b border-blue-800/20 hover:bg-blue-800/20 transition-colors ${
-                          idx % 2 === 0 ? "" : "bg-blue-900/10"
-                        }`}
-                      >
-                        <td className="px-4 py-3 font-mono text-xs text-cyan-300/80 whitespace-nowrap">
-                          {row.nomor_pendaftaran}
-                        </td>
-                        <td className="px-4 py-3 font-medium text-blue-100 whitespace-nowrap">
-                          {row.nama_lengkap}
-                        </td>
-                        <td className="px-4 py-3 text-blue-300/60 whitespace-nowrap">
-                          {row.email}
-                        </td>
-                        <td className="px-4 py-3 text-blue-300/60 max-w-[160px] truncate">
-                          {row.program_studi_s1 ?? "-"}
-                        </td>
-                        <td className="px-4 py-3 text-center">
-                          <span
-                            className={`font-semibold ${
-                              row.ipk_s1 >= 3.5
-                                ? "text-teal-400"
-                                : row.ipk_s1 >= 3.0
-                                ? "text-cyan-400"
-                                : "text-blue-300"
-                            }`}
-                          >
-                            {row.ipk_s1 ? Number(row.ipk_s1).toFixed(2) : "-"}
-                          </span>
-                        </td>
-                        <td className="px-4 py-3 whitespace-nowrap">
-                          <span className="text-xs px-2 py-1 rounded-full bg-blue-800/40 text-blue-300/70 border border-blue-700/30">
-                            {JALUR_LABEL[row.jalur_masuk] ?? row.jalur_masuk}
-                          </span>
-                        </td>
-                        <td className="px-4 py-3 whitespace-nowrap">
-                          <StatusBadge status={row.status} />
-                        </td>
-                        <td className="px-4 py-3 text-blue-400/50 text-xs whitespace-nowrap">
-                          {new Date(row.created_at).toLocaleDateString("id-ID", {
-                            day: "2-digit",
-                            month: "short",
-                            year: "numeric",
-                          })}
-                        </td>
-                        <td className="px-4 py-3">
-                          <Link
-                            href={`/admin/pendaftar/${row.id}`}
-                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 hover:bg-cyan-500/20 transition-all text-xs font-medium"
-                          >
-                            <Eye size={13} />
-                            Detail
-                          </Link>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
-          </div>
-
-          {/* Tidak lolos count info */}
-          {stats.tidakLolos > 0 && (
-            <div className="flex items-center gap-3 p-4 rounded-xl bg-red-500/8 border border-red-500/20">
-              <XCircle size={16} className="text-red-400 flex-shrink-0" />
-              <p className="text-red-300/70 text-sm">
-                <span className="font-semibold text-red-300">{stats.tidakLolos}</span> pendaftar
-                dinyatakan tidak lolos seleksi administrasi.
-              </p>
-            </div>
-          )}
-        </main>
+        ))}
       </div>
-    </>
+
+      {/* Not lolos alert */}
+      {stats.tidakLolos > 0 && (
+        <div
+          className="flex items-center gap-3 p-4 rounded-xl border mb-6"
+          style={{
+            background: "rgba(239,68,68,0.07)",
+            borderColor: "rgba(239,68,68,0.2)",
+          }}
+        >
+          <XCircle size={16} style={{ color: "#f87171" }} className="flex-shrink-0" />
+          <p className="text-sm" style={{ color: "#fca5a5" }}>
+            <span className="font-semibold">{stats.tidakLolos}</span> pendaftar dinyatakan tidak lolos seleksi administrasi.
+          </p>
+        </div>
+      )}
+
+      {/* Table */}
+      <div className="rounded-2xl border overflow-hidden" style={{ background: CARD_BG, borderColor: BORDER }}>
+        {/* Table header */}
+        <div
+          className="px-6 py-4 border-b flex items-center justify-between"
+          style={{ borderColor: BORDER }}
+        >
+          <div className="flex items-center gap-2.5">
+            <TrendingUp size={16} style={{ color: "#0ea5e9" }} />
+            <span className="font-semibold text-sm" style={{ color: "#e0f2fe" }}>
+              Semua Pendaftar
+            </span>
+            <span
+              className="text-xs px-2 py-0.5 rounded-full"
+              style={{ background: "rgba(14,165,233,0.12)", color: "#38bdf8" }}
+            >
+              {data.length}
+            </span>
+          </div>
+        </div>
+
+        {data.length === 0 ? (
+          <div className="py-20 text-center">
+            <Users size={40} className="mx-auto mb-3" style={{ color: "#1e3a5f" }} />
+            <p className="text-sm" style={{ color: "#2d5a7a" }}>
+              Belum ada data pendaftar
+            </p>
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr style={{ borderBottom: `1px solid ${BORDER}` }}>
+                  {["No. Pendaftaran", "Nama Lengkap", "Email", "Asal S1", "IPK", "Jalur", "Status", "Tgl Daftar", ""].map((h) => (
+                    <th
+                      key={h}
+                      className="text-left px-4 py-3 text-xs font-semibold uppercase tracking-wider whitespace-nowrap"
+                      style={{ color: "#2d5a7a" }}
+                    >
+                      {h}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {data.map((row, idx) => (
+                  <tr
+                    key={row.id}
+                    style={{
+                      borderBottom: `1px solid rgba(30,58,95,0.35)`,
+                      background: idx % 2 !== 0 ? "rgba(10,22,40,0.4)" : "transparent",
+                    }}
+                    onMouseEnter={(e) => {
+                      (e.currentTarget as HTMLElement).style.background = "rgba(14,165,233,0.06)";
+                    }}
+                    onMouseLeave={(e) => {
+                      (e.currentTarget as HTMLElement).style.background =
+                        idx % 2 !== 0 ? "rgba(10,22,40,0.4)" : "transparent";
+                    }}
+                  >
+                    <td className="px-4 py-3 whitespace-nowrap">
+                      <span className="font-mono text-xs" style={{ color: "#38bdf8" }}>
+                        {row.nomor_pendaftaran}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3 whitespace-nowrap font-semibold" style={{ color: "#cbd5e1" }}>
+                      {row.nama_lengkap}
+                    </td>
+                    <td className="px-4 py-3 whitespace-nowrap" style={{ color: "#4a7fa5" }}>
+                      {row.email}
+                    </td>
+                    <td className="px-4 py-3 max-w-[150px] truncate" style={{ color: "#4a7fa5" }}>
+                      {row.program_studi_s1 ?? "—"}
+                    </td>
+                    <td className="px-4 py-3 text-center font-bold" style={{
+                      color: row.ipk_s1 >= 3.5 ? "#6ee7b7" : row.ipk_s1 >= 3.0 ? "#38bdf8" : "#94a3b8",
+                    }}>
+                      {row.ipk_s1 ? Number(row.ipk_s1).toFixed(2) : "—"}
+                    </td>
+                    <td className="px-4 py-3 whitespace-nowrap">
+                      <span
+                        className="text-xs px-2.5 py-1 rounded-full font-medium"
+                        style={{
+                          background: "rgba(14,165,233,0.1)",
+                          color: "#7dd3fc",
+                          border: "1px solid rgba(14,165,233,0.2)",
+                        }}
+                      >
+                        {JALUR_LABEL[row.jalur_masuk] ?? row.jalur_masuk}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3 whitespace-nowrap">
+                      <StatusBadge status={row.status} />
+                    </td>
+                    <td className="px-4 py-3 text-xs whitespace-nowrap" style={{ color: "#2d5a7a" }}>
+                      {new Date(row.created_at).toLocaleDateString("id-ID", {
+                        day: "2-digit",
+                        month: "short",
+                        year: "numeric",
+                      })}
+                    </td>
+                    <td className="px-4 py-3">
+                      <Link
+                        href={`/admin/pendaftar/${row.id}`}
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all"
+                        style={{
+                          background: "rgba(14,165,233,0.12)",
+                          color: "#38bdf8",
+                          border: "1px solid rgba(14,165,233,0.2)",
+                        }}
+                      >
+                        <Eye size={12} />
+                        Detail
+                      </Link>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+    </AdminLayout>
   );
 }
