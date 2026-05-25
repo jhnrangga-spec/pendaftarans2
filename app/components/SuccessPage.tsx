@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { CheckCircle, Download, Home, Mail } from "lucide-react";
+import Link from "next/link";
 
 interface Props {
   namaLengkap: string;
@@ -107,10 +108,10 @@ export default function SuccessPage({ namaLengkap, email, nomorPendaftaran }: Pr
           <Download size={16} />
           Cetak Bukti
         </button>
-        <a href="/" className="btn-primary text-sm py-3 px-6">
+        <Link href="/" className="btn-primary text-sm py-3 px-6">
           <Home size={16} />
           Kembali ke Beranda
-        </a>
+        </Link>
       </div>
     </div>
   );

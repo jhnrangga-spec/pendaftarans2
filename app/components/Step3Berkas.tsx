@@ -30,13 +30,10 @@ export default function Step3Berkas({ defaultValues, onNext, onBack }: Props) {
     register,
     handleSubmit,
     formState: { errors },
-    watch,
   } = useForm<Step3Data>({
     resolver: zodResolver(step3Schema),
     defaultValues,
   });
-
-  const jalurMasuk = watch("jalurMasuk");
 
   const handleFileChange = (berkasId: string, file: File | null) => {
     if (file) {

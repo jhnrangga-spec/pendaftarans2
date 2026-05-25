@@ -8,7 +8,7 @@ import Step2Pendidikan from "../components/Step2Pendidikan";
 import Step3Berkas from "../components/Step3Berkas";
 import Step4Konfirmasi from "../components/Step4Konfirmasi";
 import SuccessPage from "../components/SuccessPage";
-import { Step1Data, Step2Data, Step3Data, FormData } from "../lib/schema";
+import { Step1Data, Step2Data, Step3Data } from "../lib/schema";
 import { Waves, ArrowLeft } from "lucide-react";
 import Link from "next/link";
 
