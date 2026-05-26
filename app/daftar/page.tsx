@@ -9,7 +9,7 @@ import Step3Berkas from "../components/Step3Berkas";
 import Step4Konfirmasi from "../components/Step4Konfirmasi";
 import SuccessPage from "../components/SuccessPage";
 import { Step1Data, Step2Data, Step3Data } from "../lib/schema";
-import { Waves, ArrowLeft } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 
 type AllFormData = Partial<Step1Data & Step2Data & Step3Data>;
@@ -91,9 +91,7 @@ export default function DaftarPage() {
               <ArrowLeft size={18} />
             </Link>
             <div className="flex items-center gap-3 flex-1">
-              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-cyan-400 to-teal-500 flex items-center justify-center">
-                <Waves size={16} className="text-white" />
-              </div>
+              <img src="/logo-unkhair.png" alt="Logo Universitas Khairun" className="w-8 h-8 object-contain" />
               <div>
                 <p className="text-xs text-blue-400/50 leading-none">Universitas Khairun</p>
                 <p className="text-sm font-bold text-blue-100 leading-tight">
