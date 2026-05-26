@@ -6,6 +6,7 @@ import StatusBadge from "@/app/components/admin/StatusBadge";
 import StatusUpdater from "@/app/components/admin/StatusUpdater";
 import ReloadButton from "@/app/components/admin/ReloadButton";
 import BerkasDownloader from "@/app/components/admin/BerkasDownloader";
+import DownloadAllButton from "@/app/components/admin/DownloadAllButton";
 import Link from "next/link";
 import {
   ArrowLeft, User, Phone, GraduationCap, Briefcase, FileText, Calendar, Hash, FolderOpen,
@@ -266,10 +267,17 @@ export default async function DetailPendaftarPage({ params }: { params: Promise<
               );
             }
             return (
-              <div className="flex flex-wrap gap-3">
-                {uploaded.map((b) => (
-                  <BerkasDownloader key={b.field} label={b.label} path={p[b.field]!} />
-                ))}
+              <div className="space-y-4">
+                {/* Download semua sekaligus */}
+                <div className="pb-4" style={{ borderBottom: "1px solid rgba(30,58,95,0.4)" }}>
+                  <DownloadAllButton id={p.id} nomorPendaftaran={p.nomor_pendaftaran} />
+                </div>
+                {/* Download per berkas */}
+                <div className="flex flex-wrap gap-3">
+                  {uploaded.map((b) => (
+                    <BerkasDownloader key={b.field} label={b.label} path={p[b.field]!} />
+                  ))}
+                </div>
               </div>
             );
           })()}
