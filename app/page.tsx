@@ -55,7 +55,9 @@ export default function HomePage() {
         <nav className="sticky top-0 z-50 border-b border-blue-800/30 backdrop-blur-xl bg-blue-950/40">
           <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <img src="/logo-unkhair.svg" alt="Logo Universitas Khairun" className="w-10 h-10" />
+              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-cyan-400 to-teal-500 flex items-center justify-center shadow-lg shadow-cyan-500/30">
+                <Waves size={20} className="text-white" />
+              </div>
               <div>
                 <p className="text-xs text-blue-400/60 leading-none">Universitas Khairun</p>
                 <p className="text-sm font-bold text-blue-100 leading-tight">Pascasarjana Ilmu Kelautan</p>

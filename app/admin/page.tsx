@@ -2,7 +2,7 @@
 
 import { useState, FormEvent } from "react";
 import { useRouter } from "next/navigation";
-import { Eye, EyeOff, Lock, User } from "lucide-react";
+import { Waves, Eye, EyeOff, Lock, User, Shield } from "lucide-react";
 import Link from "next/link";
 
 export default function AdminLoginPage() {
@@ -42,7 +42,9 @@ export default function AdminLoginPage() {
         <div className="w-full max-w-md">
           {/* Header */}
           <div className="text-center mb-8">
-            <img src="/logo-unkhair.svg" alt="Logo Universitas Khairun" className="w-16 h-16 mb-4 mx-auto" />
+            <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-cyan-400 to-teal-500 shadow-lg shadow-cyan-500/30 mb-4">
+              <Shield size={28} className="text-white" />
+            </div>
             <h1 className="text-2xl font-bold text-white">Panel Admin</h1>
             <p className="text-blue-300/60 text-sm mt-1">
               Sistem Pendaftaran S2 Ilmu Kelautan
@@ -155,7 +157,9 @@ export default function AdminLoginPage() {
 
           {/* Branding */}
           <div className="flex items-center justify-center gap-2 mt-8">
-            <img src="/logo-unkhair.svg" alt="Logo Universitas Khairun" className="w-6 h-6" />
+            <div className="w-6 h-6 rounded-full bg-gradient-to-br from-cyan-400 to-teal-500 flex items-center justify-center">
+              <Waves size={12} className="text-white" />
+            </div>
             <span className="text-blue-400/30 text-xs">Universitas Khairun</span>
           </div>
         </div>

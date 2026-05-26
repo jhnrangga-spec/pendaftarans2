@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter, usePathname } from "next/navigation";
-import { LogOut, LayoutDashboard, Shield, Users, ChevronRight } from "lucide-react";
+import { Waves, LogOut, LayoutDashboard, Shield, Users, ChevronRight } from "lucide-react";
 import Link from "next/link";
 
 const NAV = [
@@ -32,7 +32,12 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         {/* Logo */}
         <div className="px-5 py-5 border-b" style={{ borderColor: "rgba(30,58,95,0.6)" }}>
           <div className="flex items-center gap-3">
-            <img src="/logo-unkhair.svg" alt="Logo Universitas Khairun" className="w-9 h-9 flex-shrink-0" />
+            <div
+              className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
+              style={{ background: "linear-gradient(135deg,#0ea5e9,#06b6d4)" }}
+            >
+              <Waves size={17} className="text-white" />
+            </div>
             <div>
               <p className="text-xs leading-none" style={{ color: "#4a7fa5" }}>
                 Universitas Khairun
@@ -119,7 +124,12 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         >
           {/* Mobile logo */}
           <div className="flex items-center gap-2 md:hidden">
-            <img src="/logo-unkhair.svg" alt="Logo Universitas Khairun" className="w-7 h-7" />
+            <div
+              className="w-7 h-7 rounded-lg flex items-center justify-center"
+              style={{ background: "linear-gradient(135deg,#0ea5e9,#06b6d4)" }}
+            >
+              <Waves size={13} className="text-white" />
+            </div>
             <span className="text-sm font-bold" style={{ color: "#e0f2fe" }}>
               Admin
             </span>
