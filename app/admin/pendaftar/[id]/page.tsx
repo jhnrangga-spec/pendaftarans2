@@ -5,9 +5,10 @@ import AdminLayout from "@/app/components/admin/AdminLayout";
 import StatusBadge from "@/app/components/admin/StatusBadge";
 import StatusUpdater from "@/app/components/admin/StatusUpdater";
 import ReloadButton from "@/app/components/admin/ReloadButton";
+import BerkasDownloader from "@/app/components/admin/BerkasDownloader";
 import Link from "next/link";
 import {
-  ArrowLeft, User, Phone, GraduationCap, Briefcase, FileText, Calendar, Hash,
+  ArrowLeft, User, Phone, GraduationCap, Briefcase, FileText, Calendar, Hash, FolderOpen,
 } from "lucide-react";
 
 interface Pendaftar {
@@ -42,6 +43,12 @@ interface Pendaftar {
   referensi: string;
   status: string;
   created_at: string;
+  file_ijazah: string | null;
+  file_transkrip: string | null;
+  file_ktp: string | null;
+  file_foto: string | null;
+  file_cv: string | null;
+  file_rekomendasi: string | null;
 }
 
 async function getPendaftar(id: string): Promise<{ data: Pendaftar | null; error: string | null }> {
@@ -237,6 +244,35 @@ export default async function DetailPendaftarPage({ params }: { params: Promise<
               </div>
             </div>
           </div>
+        </Section>
+
+        {/* Berkas Pendaftar */}
+        <Section title="Berkas Pendaftar" icon={<FolderOpen size={16} style={{ color: "#0ea5e9" }} />}>
+          {(() => {
+            const BERKAS_LIST = [
+              { field: "file_ijazah" as const, label: "Ijazah S1 (Legalisir)" },
+              { field: "file_transkrip" as const, label: "Transkrip Nilai S1 (Legalisir)" },
+              { field: "file_ktp" as const, label: "KTP / Identitas Diri" },
+              { field: "file_foto" as const, label: "Pas Foto 4×6 (Terbaru)" },
+              { field: "file_cv" as const, label: "Curriculum Vitae" },
+              { field: "file_rekomendasi" as const, label: "Surat Rekomendasi" },
+            ];
+            const uploaded = BERKAS_LIST.filter((b) => p[b.field]);
+            if (uploaded.length === 0) {
+              return (
+                <p className="text-sm" style={{ color: "#2d5a7a", fontStyle: "italic" }}>
+                  Belum ada berkas yang diunggah.
+                </p>
+              );
+            }
+            return (
+              <div className="flex flex-wrap gap-3">
+                {uploaded.map((b) => (
+                  <BerkasDownloader key={b.field} label={b.label} path={p[b.field]!} />
+                ))}
+              </div>
+            );
+          })()}
         </Section>
       </div>
     </AdminLayout>
