@@ -4,7 +4,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { step3Schema, Step3Data } from "../lib/schema";
 import FormField from "./FormField";
-import { FileText, Upload, CheckSquare } from "lucide-react";
+import { FileText, Upload, CheckSquare, X, Loader2, Check } from "lucide-react";
 import { useState } from "react";
 
 interface Props {
@@ -13,31 +13,77 @@ interface Props {
   onBack: () => void;
 }
 
+type UploadState =
+  | { status: "idle" }
+  | { status: "uploading" }
+  | { status: "success"; filename: string }
+  | { status: "error"; message: string };
+
 const BERKAS_REQUIRED = [
-  { id: "ijazah", label: "Ijazah S1 (Legalisir)" },
-  { id: "transkrip", label: "Transkrip Nilai S1 (Legalisir)" },
-  { id: "ktp", label: "KTP / Identitas Diri" },
-  { id: "foto", label: "Pas Foto 4×6 (Terbaru)" },
-  { id: "cv", label: "Curriculum Vitae" },
-  { id: "motivasi_doc", label: "Surat Rekomendasi" },
+  { id: "ijazah", label: "Ijazah S1 (Legalisir)", field: "fileIjazah" as keyof Step3Data },
+  { id: "transkrip", label: "Transkrip Nilai S1 (Legalisir)", field: "fileTranskrip" as keyof Step3Data },
+  { id: "ktp", label: "KTP / Identitas Diri", field: "fileKtp" as keyof Step3Data },
+  { id: "foto", label: "Pas Foto 4×6 (Terbaru)", field: "fileFoto" as keyof Step3Data },
+  { id: "cv", label: "Curriculum Vitae", field: "fileCv" as keyof Step3Data },
+  { id: "motivasi_doc", label: "Surat Rekomendasi", field: "fileRekomendasi" as keyof Step3Data },
 ];
 
 export default function Step3Berkas({ defaultValues, onNext, onBack }: Props) {
-  const [uploadedFiles, setUploadedFiles] = useState<Record<string, string>>({});
+  const [uploadStates, setUploadStates] = useState<Record<string, UploadState>>(
+    () => Object.fromEntries(BERKAS_REQUIRED.map((b) => [b.id, { status: "idle" }]))
+  );
   const [dragOver, setDragOver] = useState<string | null>(null);
 
   const {
     register,
     handleSubmit,
+    setValue,
     formState: { errors },
   } = useForm<Step3Data>({
     resolver: zodResolver(step3Schema),
     defaultValues,
   });
 
-  const handleFileChange = (berkasId: string, file: File | null) => {
-    if (file) {
-      setUploadedFiles((prev) => ({ ...prev, [berkasId]: file.name }));
+  // Register hidden inputs for all file path fields
+  BERKAS_REQUIRED.forEach((b) => {
+    register(b.field);
+  });
+
+  const handleFileChange = async (berkas: typeof BERKAS_REQUIRED[0], file: File | null) => {
+    if (!file) return;
+
+    setUploadStates((prev) => ({ ...prev, [berkas.id]: { status: "uploading" } }));
+
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("type", berkas.id);
+
+      const res = await fetch("/api/upload", {
+        method: "POST",
+        body: formData,
+      });
+
+      const json = await res.json();
+
+      if (!res.ok || json.error) {
+        setUploadStates((prev) => ({
+          ...prev,
+          [berkas.id]: { status: "error", message: json.error ?? "Gagal mengunggah file." },
+        }));
+        return;
+      }
+
+      setValue(berkas.field, json.path);
+      setUploadStates((prev) => ({
+        ...prev,
+        [berkas.id]: { status: "success", filename: file.name },
+      }));
+    } catch {
+      setUploadStates((prev) => ({
+        ...prev,
+        [berkas.id]: { status: "error", message: "Koneksi gagal. Coba lagi." },
+      }));
     }
   };
 
@@ -117,40 +163,74 @@ export default function Step3Berkas({ defaultValues, onNext, onBack }: Props) {
         </p>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          {BERKAS_REQUIRED.map((berkas) => (
-            <div key={berkas.id}>
-              <label
-                className={`file-upload-zone block ${dragOver === berkas.id ? "border-teal-400 bg-teal-500/5" : ""}`}
-                onDragOver={(e) => { e.preventDefault(); setDragOver(berkas.id); }}
-                onDragLeave={() => setDragOver(null)}
-                onDrop={(e) => {
-                  e.preventDefault();
-                  setDragOver(null);
-                  const file = e.dataTransfer.files[0];
-                  if (file) handleFileChange(berkas.id, file);
-                }}
-              >
-                <input
-                  type="file"
-                  accept=".pdf,.jpg,.jpeg,.png"
-                  className="sr-only"
-                  onChange={(e) => handleFileChange(berkas.id, e.target.files?.[0] ?? null)}
-                />
-                {uploadedFiles[berkas.id] ? (
-                  <div className="flex items-center gap-2 text-teal-400">
-                    <CheckSquare size={18} />
-                    <span className="text-sm truncate">{uploadedFiles[berkas.id]}</span>
-                  </div>
-                ) : (
-                  <div>
-                    <Upload size={20} className="text-blue-400/40 mx-auto mb-2" />
-                    <p className="text-xs font-medium text-blue-200/80">{berkas.label}</p>
-                    <p className="text-xs text-blue-400/40 mt-1">Klik atau seret ke sini</p>
-                  </div>
-                )}
-              </label>
-            </div>
-          ))}
+          {BERKAS_REQUIRED.map((berkas) => {
+            const state = uploadStates[berkas.id];
+
+            return (
+              <div key={berkas.id}>
+                {/* Hidden input for path value */}
+                <input type="hidden" {...register(berkas.field)} />
+
+                <label
+                  className={`file-upload-zone block cursor-pointer ${
+                    dragOver === berkas.id ? "border-teal-400 bg-teal-500/5" : ""
+                  } ${state.status === "uploading" ? "pointer-events-none opacity-70" : ""}`}
+                  onDragOver={(e) => {
+                    e.preventDefault();
+                    if (state.status !== "uploading") setDragOver(berkas.id);
+                  }}
+                  onDragLeave={() => setDragOver(null)}
+                  onDrop={(e) => {
+                    e.preventDefault();
+                    setDragOver(null);
+                    const file = e.dataTransfer.files[0];
+                    if (file) handleFileChange(berkas, file);
+                  }}
+                >
+                  <input
+                    type="file"
+                    accept=".pdf,.jpg,.jpeg,.png"
+                    className="sr-only"
+                    onChange={(e) => handleFileChange(berkas, e.target.files?.[0] ?? null)}
+                    disabled={state.status === "uploading"}
+                  />
+
+                  {state.status === "idle" && (
+                    <div>
+                      <Upload size={20} className="text-blue-400/40 mx-auto mb-2" />
+                      <p className="text-xs font-medium text-blue-200/80">{berkas.label}</p>
+                      <p className="text-xs text-blue-400/40 mt-1">Klik atau seret ke sini</p>
+                    </div>
+                  )}
+
+                  {state.status === "uploading" && (
+                    <div className="flex items-center justify-center gap-2 text-teal-400">
+                      <Loader2 size={18} className="animate-spin" />
+                      <span className="text-sm">Mengunggah...</span>
+                    </div>
+                  )}
+
+                  {state.status === "success" && (
+                    <div className="flex items-center gap-2 text-teal-400">
+                      <Check size={18} className="flex-shrink-0" />
+                      <span className="text-sm truncate">{state.filename}</span>
+                    </div>
+                  )}
+
+                  {state.status === "error" && (
+                    <div>
+                      <div className="flex items-center gap-2 text-red-400 mb-1">
+                        <X size={18} className="flex-shrink-0" />
+                        <span className="text-sm">Gagal mengunggah</span>
+                      </div>
+                      <p className="text-xs text-red-400/70">{state.message}</p>
+                      <p className="text-xs text-blue-400/40 mt-2">Klik untuk coba lagi</p>
+                    </div>
+                  )}
+                </label>
+              </div>
+            );
+          })}
         </div>
       </div>
 

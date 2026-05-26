@@ -42,6 +42,12 @@ export async function POST(req: NextRequest) {
       motivasi: body.motivasi,
       rencana_penelitian: body.rencanaPenelitian,
       referensi: body.referensi ?? null,
+      file_ijazah: body.fileIjazah ?? null,
+      file_transkrip: body.fileTranskrip ?? null,
+      file_ktp: body.fileKtp ?? null,
+      file_foto: body.fileFoto ?? null,
+      file_cv: body.fileCv ?? null,
+      file_rekomendasi: body.fileRekomendasi ?? null,
       status: "pending",
     });
 

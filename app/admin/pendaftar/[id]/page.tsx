@@ -5,9 +5,10 @@ import AdminLayout from "@/app/components/admin/AdminLayout";
 import StatusBadge from "@/app/components/admin/StatusBadge";
 import StatusUpdater from "@/app/components/admin/StatusUpdater";
 import ReloadButton from "@/app/components/admin/ReloadButton";
+import BerkasDownloader from "@/app/components/admin/BerkasDownloader";
 import Link from "next/link";
 import {
-  ArrowLeft, User, Phone, GraduationCap, Briefcase, FileText, Calendar, Hash,
+  ArrowLeft, User, Phone, GraduationCap, Briefcase, FileText, Calendar, Hash, FolderOpen,
 } from "lucide-react";
 
 interface Pendaftar {
@@ -42,6 +43,12 @@ interface Pendaftar {
   referensi: string;
   status: string;
   created_at: string;
+  file_ijazah: string | null;
+  file_transkrip: string | null;
+  file_ktp: string | null;
+  file_foto: string | null;
+  file_cv: string | null;
+  file_rekomendasi: string | null;
 }
 
 async function getPendaftar(id: string): Promise<{ data: Pendaftar | null; error: string | null }> {

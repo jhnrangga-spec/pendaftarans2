@@ -54,6 +54,12 @@ export const step3Schema = z.object({
   suratKesanggupan: z.boolean().refine((v) => v === true, {
     message: "Anda harus menyetujui pernyataan ini",
   }),
+  fileIjazah: z.string().optional(),
+  fileTranskrip: z.string().optional(),
+  fileKtp: z.string().optional(),
+  fileFoto: z.string().optional(),
+  fileCv: z.string().optional(),
+  fileRekomendasi: z.string().optional(),
 });
 
 export type Step1Data = z.infer<typeof step1Schema>;
