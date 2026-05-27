@@ -5,7 +5,7 @@ import Link from "next/link";
 import StatusBadge from "./StatusBadge";
 import {
   Eye, Search, Download, ChevronLeft, ChevronRight,
-  Users, Clock, CheckCircle, XCircle, Award, Filter, X,
+  Users, Clock, CheckCircle, XCircle, Award, Filter, X, Trash2, AlertTriangle, Loader2,
 } from "lucide-react";
 
 interface Pendaftar {
@@ -71,11 +71,35 @@ function exportCSV(data: Pendaftar[]) {
   URL.revokeObjectURL(url);
 }
 
-export default function DashboardClient({ data }: Props) {
+export default function DashboardClient({ data: initialData }: Props) {
+  const [data, setData] = useState(initialData);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
   const [jalurFilter, setJalurFilter] = useState("");
   const [page, setPage] = useState(1);
+  const [confirmDelete, setConfirmDelete] = useState<Pendaftar | null>(null);
+  const [deleting, setDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState("");
+
+  async function handleDelete() {
+    if (!confirmDelete) return;
+    setDeleting(true);
+    setDeleteError("");
+    try {
+      const res = await fetch(`/api/admin/delete?id=${confirmDelete.id}`, { method: "DELETE" });
+      if (!res.ok) {
+        const json = await res.json().catch(() => ({}));
+        setDeleteError(json.error ?? "Gagal menghapus");
+        return;
+      }
+      setData((prev) => prev.filter((d) => d.id !== confirmDelete.id));
+      setConfirmDelete(null);
+    } catch {
+      setDeleteError("Koneksi gagal, coba lagi");
+    } finally {
+      setDeleting(false);
+    }
+  }
 
   const stats = useMemo(() => ({
     total: data.length,
@@ -303,13 +327,23 @@ export default function DashboardClient({ data }: Props) {
                           {new Date(row.created_at).toLocaleDateString("id-ID", { day: "2-digit", month: "short", year: "numeric" })}
                         </td>
                         <td className="px-4 py-3">
-                          <Link
-                            href={`/admin/pendaftar/${row.id}`}
-                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all"
-                            style={{ background: "rgba(14,165,233,0.12)", color: "#38bdf8", border: "1px solid rgba(14,165,233,0.2)" }}
-                          >
-                            <Eye size={12} /> Detail
-                          </Link>
+                          <div className="flex items-center gap-2">
+                            <Link
+                              href={`/admin/pendaftar/${row.id}`}
+                              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all"
+                              style={{ background: "rgba(14,165,233,0.12)", color: "#38bdf8", border: "1px solid rgba(14,165,233,0.2)" }}
+                            >
+                              <Eye size={12} /> Detail
+                            </Link>
+                            <button
+                              onClick={() => { setConfirmDelete(row); setDeleteError(""); }}
+                              className="inline-flex items-center justify-center w-7 h-7 rounded-lg transition-all"
+                              style={{ background: "rgba(239,68,68,0.1)", color: "#f87171", border: "1px solid rgba(239,68,68,0.2)" }}
+                              title="Hapus pendaftar"
+                            >
+                              <Trash2 size={12} />
+                            </button>
+                          </div>
                         </td>
                       </tr>
                     );
@@ -372,6 +406,51 @@ export default function DashboardClient({ data }: Props) {
           </>
         )}
       </div>
+
+      {/* Modal Konfirmasi Hapus */}
+      {confirmDelete && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: "rgba(0,0,0,0.7)", backdropFilter: "blur(4px)" }}>
+          <div className="w-full max-w-md rounded-2xl border p-6" style={{ background: "linear-gradient(135deg,#0c1d35,#0a1a2e)", borderColor: "rgba(239,68,68,0.3)" }}>
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: "rgba(239,68,68,0.15)" }}>
+                <AlertTriangle size={20} style={{ color: "#f87171" }} />
+              </div>
+              <h3 className="text-base font-bold" style={{ color: "#e0f2fe" }}>Hapus Pendaftar</h3>
+            </div>
+            <p className="text-sm mb-1" style={{ color: "#94a3b8" }}>
+              Anda akan menghapus data pendaftar berikut secara permanen:
+            </p>
+            <div className="rounded-xl p-3 my-4" style={{ background: "rgba(10,22,40,0.6)", border: "1px solid rgba(30,58,95,0.5)" }}>
+              <p className="text-sm font-bold" style={{ color: "#e0f2fe" }}>{confirmDelete.nama_lengkap}</p>
+              <p className="text-xs mt-0.5" style={{ color: "#4a7fa5" }}>{confirmDelete.nomor_pendaftaran} · {confirmDelete.email}</p>
+            </div>
+            <p className="text-xs mb-5" style={{ color: "#f87171" }}>
+              ⚠ Tindakan ini tidak dapat dibatalkan. Semua berkas yang diunggah juga akan dihapus.
+            </p>
+            {deleteError && (
+              <p className="text-xs mb-4" style={{ color: "#f87171" }}>⚠ {deleteError}</p>
+            )}
+            <div className="flex gap-3">
+              <button
+                onClick={() => setConfirmDelete(null)}
+                disabled={deleting}
+                className="flex-1 py-2.5 rounded-xl text-sm font-semibold transition-all disabled:opacity-50"
+                style={{ background: "rgba(30,58,95,0.4)", color: "#94a3b8", border: "1px solid rgba(30,58,95,0.6)" }}
+              >
+                Batal
+              </button>
+              <button
+                onClick={handleDelete}
+                disabled={deleting}
+                className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-bold transition-all disabled:opacity-50"
+                style={{ background: "rgba(239,68,68,0.2)", color: "#f87171", border: "1px solid rgba(239,68,68,0.4)" }}
+              >
+                {deleting ? <><Loader2 size={14} className="animate-spin" /> Menghapus...</> : <><Trash2 size={14} /> Hapus Permanen</>}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
